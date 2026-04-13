@@ -34,29 +34,43 @@
 ## 定时任务配置
 本工作流支持每日自动推送早报，需要配置定时任务。
 
-### 快速配置（推荐）
-```bash
-# 方式1: Crontab（最简单）
-bash scripts/setup_cron.sh
+### ✅ 已配置完成（当前环境）
+调度器已启动并运行中！
 
-# 方式2: Systemd（适用于现代Linux）
-sudo bash scripts/setup_systemd.sh
+```bash
+# 查看调度器状态
+ps aux | grep scheduler.py
+
+# 查看调度日志
+tail -f logs/scheduler.log
+
+# 停止调度器
+bash stop_scheduler.sh
+
+# 重新启动调度器
+bash start_scheduler.sh
 ```
 
 ### 推送时间
 - **早上 9:00** - 晨报
 - **晚上 18:00** - 晚报
 
-### 手动运行测试
+### 其他配置方式
+如果需要在其他环境配置，支持以下方案：
+
+**方式1: Crontab（Linux/Mac）**
 ```bash
-uv run python src/main.py '{"search_query":"今日热点","time_range":"1d"}'
+bash scripts/setup_cron.sh
 ```
 
-### 查看日志
+**方式2: Systemd（现代Linux）**
 ```bash
-# 查看推送日志
-tail -f logs/morning.log
-tail -f logs/evening.log
+sudo bash scripts/setup_systemd.sh
+```
+
+**方式3: Python调度器（当前使用的方案）**
+```bash
+bash start_scheduler.sh
 ```
 
 详细配置说明请参考 `docs/cron_setup.md` 文档。
