@@ -67,23 +67,16 @@ def wechat_send_node(state: WechatSendInput, config: RunnableConfig, runtime: Ru
     ctx = runtime.context
     
     # 构建markdown格式的消息内容
-    # 企业微信markdown消息限制4096字节，需要精简内容
     markdown_content = state.news_summary
 
-    # 如果内容超过4000字节，进行截断（留出余量）
-    max_length = 4000
-    if len(markdown_content.encode('utf-8')) > max_length:
-        # 只保留前5条新闻
-        shortened_news = state.news_summary.split("\n\n", 1)[0] + "\n\n"
-        if state.news_list:
-            for i, news in enumerate(state.news_list[:5], 1):
-                shortened_news += f"{i}. **{news['title']}**\n"
-                if news['snippet']:
-                    snippet = news['snippet'][:50] + "..." if len(news['snippet']) > 50 else news['snippet']
-                    shortened_news += f"   {snippet}\n"
-                shortened_news += f"   {news['url']}\n\n"
-            shortened_news += f"共{len(state.news_list)}条新闻，仅显示前5条"
-        markdown_content = shortened_news
+    # 检查消息长度（企业微信markdown限制4096字节）
+    message_bytes = len(markdown_content.encode('utf-8'))
+    if message_bytes > 4096:
+        # 如果消息过长，只保留前5条新闻
+        lines = markdown_content.split('\n\n')
+        header = '\n\n'.join(lines[:3])  # 保留头部和节日信息
+        news_part = '\n\n'.join([line for line in lines if line.strip().startswith(('1、', '2、', '3、', '4、', '5、'))])
+        markdown_content = f"{header}\n\n━━━━━━━━━━━━━━━━\n\n{news_part}\n\n━━━━━━━━━━━━━━━━\n\n✨【微语】消息较长，仅显示前5条新闻"
     
     # 调用企业微信API发送消息
     try:

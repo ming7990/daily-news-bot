@@ -166,25 +166,26 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
     weekday = get_weekday()
     lunar_date = get_lunar_date()
 
-    header = f"每日早报，{date_str}，{weekday}，农历{lunar_date}，工作愉快，生活喜乐！[太阳]"
+    header = f"📰 每日早报，{date_str}，{weekday}，农历{lunar_date}，工作愉快，生活喜乐！"
 
     # 节日提醒
     festival_info = get_festival_info()
     festival_section = ""
     if festival_info:
-        festival_section = f"\n\n👉今天是{festival_info['name']}，{festival_info['desc']}[握手][握手][握手]"
+        festival_section = f"\n\n🎉 今天是{festival_info['name']}，{festival_info['desc']}"
 
     # 新闻列表
-    news_section = ""
+    news_section = "\n\n━━━━━━━━━━━━━━━━"
     if news_list:
         for news in news_list:
-            news_section += f"\n{news['index']}、{news['title']}"
+            news_section += f"\n\n{news['index']}、{news['title']}"
+        news_section += "\n\n━━━━━━━━━━━━━━━━"
     else:
-        news_section = "\n今日暂无新闻更新"
+        news_section = "\n\n今日暂无新闻更新"
 
     # 微语
     quote = get_daily_quote()
-    quote_section = f"\n\n【微语】{quote}[玫瑰]"
+    quote_section = f"\n\n✨【微语】{quote}"
 
     # 组合完整消息
     news_summary = header + festival_section + news_section + quote_section
