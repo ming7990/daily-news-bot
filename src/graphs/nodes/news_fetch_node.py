@@ -175,7 +175,7 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
         festival_section = f"\n\n🎉 今天是{festival_info['name']}，{festival_info['desc']}"
 
     # 新闻列表
-    news_section = "\n"
+    news_section = "\n\n"
     if news_list:
         for i, news in enumerate(news_list):
             if i < len(news_list) - 1:  # 不是最后一条
