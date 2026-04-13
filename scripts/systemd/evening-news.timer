@@ -1,0 +1,9 @@
+[Unit]
+Description=早报推送定时器 - 晚上6点
+
+[Timer]
+OnCalendar=*-*-* 18:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

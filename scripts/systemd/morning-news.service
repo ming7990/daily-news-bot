@@ -1,0 +1,13 @@
+[Unit]
+Description=早报推送服务 - 早上9点
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/path/to/your/project
+ExecStart=/usr/bin/uv run python src/main.py '{"search_query":"今日热点","time_range":"1d"}'
+StandardOutput=append:/path/to/your/project/logs/morning.log
+StandardError=append:/path/to/your/project/logs/morning.log
+
+[Install]
+WantedBy=multi-user.target

@@ -31,20 +31,35 @@
 3. **新闻列表**：10条简短新闻标题，每条之间有空行隔开
 4. **今日心语**：每日励志语录，传递正能量
 
-## 定时任务说明
-本工作流需要配置定时任务来实现每日9点前和18点前自动运行。请使用以下任一方式配置：
+## 定时任务配置
+本工作流支持每日自动推送早报，需要配置定时任务。
 
-### 方式1：使用系统定时任务（crontab）
+### 快速配置（推荐）
 ```bash
-# 每日9点运行
-0 9 * * * cd /path/to/project && uv run python src/main.py '{"search_query":"今日热点新闻","time_range":"1d"}'
+# 方式1: Crontab（最简单）
+bash scripts/setup_cron.sh
 
-# 每日18点运行
-0 18 * * * cd /path/to/project && uv run python src/main.py '{"search_query":"今日热点新闻","time_range":"1d"}'
+# 方式2: Systemd（适用于现代Linux）
+sudo bash scripts/setup_systemd.sh
 ```
 
-### 方式2：使用任务调度器
-根据部署环境的任务调度器配置定时触发器，在9:00和18:00自动调用工作流。
+### 推送时间
+- **早上 9:00** - 晨报
+- **晚上 18:00** - 晚报
+
+### 手动运行测试
+```bash
+uv run python src/main.py '{"search_query":"今日热点","time_range":"1d"}'
+```
+
+### 查看日志
+```bash
+# 查看推送日志
+tail -f logs/morning.log
+tail -f logs/evening.log
+```
+
+详细配置说明请参考 `docs/cron_setup.md` 文档。
 
 ## 企业微信配置说明
 在使用前，需要配置企业微信机器人集成：
@@ -57,6 +72,6 @@
 - 时间范围默认为1天，可根据需要调整（如"1w"表示一周内）
 - 使用zhdate库计算农历日期
 - 包含节日提醒功能（内置常见节日列表）
-- 每日微语从预设语录库中随机选择
+- 每日心语从预设语录库中随机选择
 - 消息格式严格按照早报样式输出
 - 每条新闻之间有空行隔开，便于阅读
