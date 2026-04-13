@@ -175,12 +175,12 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
         festival_section = f"\n\n🎉 今天是{festival_info['name']}，{festival_info['desc']}"
 
     # 新闻列表
-    news_section = ""
+    news_section = "\n\n"
     if news_list:
         for news in news_list:
-            news_section += f"\n\n{news['index']}、{news['title']}"
+            news_section += f"{news['index']}、{news['title']}<br/><br/>"
     else:
-        news_section = "\n\n今日暂无新闻更新"
+        news_section = "今日暂无新闻更新"
 
     # 微语
     quote = get_daily_quote()
