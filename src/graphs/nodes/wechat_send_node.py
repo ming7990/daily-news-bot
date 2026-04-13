@@ -74,9 +74,23 @@ def wechat_send_node(state: WechatSendInput, config: RunnableConfig, runtime: Ru
     if message_bytes > 4096:
         # 如果消息过长，只保留前5条新闻
         lines = markdown_content.split('\n\n')
-        header = '\n\n'.join(lines[:3])  # 保留头部和节日信息
-        news_part = '\n\n'.join([line for line in lines if line.strip().startswith(('1、', '2、', '3、', '4、', '5、'))])
-        markdown_content = f"{header}\n\n━━━━━━━━━━━━━━━━\n\n{news_part}\n\n━━━━━━━━━━━━━━━━\n\n✨【微语】消息较长，仅显示前5条新闻"
+        header_parts = []
+        news_parts = []
+        collecting_news = False
+
+        for line in lines:
+            if collecting_news:
+                if line.strip().startswith(('1、', '2、', '3、', '4、', '5、')):
+                    news_parts.append(line)
+            else:
+                header_parts.append(line)
+                if '微语' not in line and line.strip():
+                    # 检查是否开始新闻列表（有数字序号）
+                    if any(line.strip().startswith(f"{i}、") for i in range(1, 11)):
+                        collecting_news = True
+                        news_parts.append(line)
+
+        markdown_content = '\n\n'.join(header_parts) + '\n\n' + '\n\n'.join(news_parts) + '\n\n✨【微语】消息较长，仅显示前5条新闻'
     
     # 调用企业微信API发送消息
     try:

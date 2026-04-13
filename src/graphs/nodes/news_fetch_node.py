@@ -133,11 +133,11 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
     # 初始化搜索客户端
     search_client = SearchClient(ctx=ctx)
 
-    # 执行搜索，获取12条新闻
+    # 执行搜索，获取10条新闻
     response = search_client.search(
         query=state.search_query,
         search_type="web",
-        count=12,
+        count=10,
         time_range=state.time_range,
         need_summary=False
     )
@@ -175,11 +175,10 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
         festival_section = f"\n\n🎉 今天是{festival_info['name']}，{festival_info['desc']}"
 
     # 新闻列表
-    news_section = "\n\n━━━━━━━━━━━━━━━━"
+    news_section = ""
     if news_list:
         for news in news_list:
             news_section += f"\n\n{news['index']}、{news['title']}"
-        news_section += "\n\n━━━━━━━━━━━━━━━━"
     else:
         news_section = "\n\n今日暂无新闻更新"
 
