@@ -90,7 +90,7 @@ def wechat_send_node(state: WechatSendInput, config: RunnableConfig, runtime: Ru
                         collecting_news = True
                         news_parts.append(line)
 
-        markdown_content = '\n\n'.join(header_parts) + '\n\n' + '\n\n'.join(news_parts) + '\n\n✨【微语】消息较长，仅显示前5条新闻'
+        markdown_content = '\n\n'.join(header_parts) + '\n\n' + '\n\n'.join(news_parts) + '\n\n✨【今日心语】消息较长，仅显示前5条新闻'
     
     # 调用企业微信API发送消息
     try:

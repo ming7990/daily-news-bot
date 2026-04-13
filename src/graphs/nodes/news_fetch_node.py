@@ -175,16 +175,19 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
         festival_section = f"\n\n🎉 今天是{festival_info['name']}，{festival_info['desc']}"
 
     # 新闻列表
-    news_section = "\n\n"
+    news_section = "\n"
     if news_list:
-        for news in news_list:
-            news_section += f"{news['index']}、{news['title']}\n\n"
+        for i, news in enumerate(news_list):
+            if i < len(news_list) - 1:  # 不是最后一条
+                news_section += f"{news['index']}、{news['title']}\n\n"
+            else:  # 最后一条，后面只加一个换行
+                news_section += f"{news['index']}、{news['title']}\n"
     else:
         news_section = "今日暂无新闻更新"
 
-    # 微语
+    # 今日心语
     quote = get_daily_quote()
-    quote_section = f"\n\n✨【微语】{quote}"
+    quote_section = f"\n✨【今日心语】{quote}"
 
     # 组合完整消息
     news_summary = header + festival_section + news_section + quote_section
