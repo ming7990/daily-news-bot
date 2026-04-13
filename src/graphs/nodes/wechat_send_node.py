@@ -1,6 +1,7 @@
 import os
 import json
 import re
+from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import Runtime
 from coze_coding_utils.runtime_ctx.context import Context
@@ -8,19 +9,23 @@ from coze_workload_identity import Client
 from cozeloop.decorator import observe
 from graphs.state import WechatSendInput, WechatSendOutput
 
+# 加载.env文件（用于开发测试）
+load_dotenv()
+
 
 def get_webhook_key():
-    """从集成凭证中获取企业微信机器人webhook key"""
+    """从集成凭证或环境变量中获取企业微信机器人webhook key"""
+    # 方式1: 优先从集成凭证获取
     try:
         client = Client()
         wechat_bot_credential = client.get_integration_credential("integration-wechat-bot")
-        
+
         # 检查返回的凭证是否为字符串
         if not isinstance(wechat_bot_credential, str):
             raise Exception(f"凭证类型错误，期望字符串，得到 {type(wechat_bot_credential)}")
-        
+
         credential_dict = json.loads(wechat_bot_credential)
-        
+
         # 首先尝试直接获取webhook_key
         if "webhook_key" in credential_dict:
             webhook_key = credential_dict["webhook_key"]
@@ -34,10 +39,22 @@ def get_webhook_key():
                 raise Exception(f"无法从webhook_url中提取webhook_key: {webhook_url}")
         else:
             raise Exception(f"凭证中既没有webhook_key也没有webhook_url字段，包含字段: {list(credential_dict.keys())}")
-        
+
         return webhook_key
     except Exception as e:
-        raise Exception(f"获取webhook_key失败: {str(e)}")
+        # 如果集成凭证获取失败，尝试从环境变量读取（备选方案）
+        webhook_key = os.getenv("WECHAT_ROBOT_WEBHOOK_KEY")
+        if webhook_key:
+            return webhook_key
+
+        # 如果都没有，抛出详细的错误提示
+        raise Exception(
+            f"无法获取企业微信webhook_key。\n"
+            f"集成凭证错误: {str(e)}\n"
+            f"请选择以下任一方式配置：\n"
+            f"1. 在平台配置企业微信机器人集成凭证（推荐）\n"
+            f"2. 设置环境变量 WECHAT_ROBOT_WEBHOOK_KEY"
+        )
 
 
 @observe
@@ -50,7 +67,23 @@ def wechat_send_node(state: WechatSendInput, config: RunnableConfig, runtime: Ru
     ctx = runtime.context
     
     # 构建markdown格式的消息内容
+    # 企业微信markdown消息限制4096字节，需要精简内容
     markdown_content = state.news_summary
+
+    # 如果内容超过4000字节，进行截断（留出余量）
+    max_length = 4000
+    if len(markdown_content.encode('utf-8')) > max_length:
+        # 只保留前5条新闻
+        shortened_news = state.news_summary.split("\n\n", 1)[0] + "\n\n"
+        if state.news_list:
+            for i, news in enumerate(state.news_list[:5], 1):
+                shortened_news += f"{i}. **{news['title']}**\n"
+                if news['snippet']:
+                    snippet = news['snippet'][:50] + "..." if len(news['snippet']) > 50 else news['snippet']
+                    shortened_news += f"   {snippet}\n"
+                shortened_news += f"   {news['url']}\n\n"
+            shortened_news += f"共{len(state.news_list)}条新闻，仅显示前5条"
+        markdown_content = shortened_news
     
     # 调用企业微信API发送消息
     try:
@@ -82,23 +115,11 @@ def wechat_send_node(state: WechatSendInput, config: RunnableConfig, runtime: Ru
         }
         
     except Exception as e:
-        # 如果是企业微信凭证未配置的情况，记录为模拟成功
-        error_str = str(e)
-        if "凭证" in error_str or "webhook" in error_str:
-            # 模拟成功，便于测试工作流的其他部分
-            send_result = {
-                "success": True,
-                "errcode": 0,
-                "errmsg": f"模拟成功（未配置企业微信凭证）: {markdown_content[:100]}...",
-                "message_count": len(state.news_list),
-                "simulated": True
-            }
-        else:
-            # 其他错误，记录为失败
-            send_result = {
-                "success": False,
-                "error": error_str,
-                "message_count": 0
-            }
-    
+        # 返回真实的错误信息，便于排查问题
+        send_result = {
+            "success": False,
+            "error": str(e),
+            "message_count": 0
+        }
+
     return WechatSendOutput(send_result=send_result)
