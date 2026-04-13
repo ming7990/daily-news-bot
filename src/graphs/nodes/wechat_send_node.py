@@ -103,8 +103,8 @@ def wechat_send_node(state: WechatSendInput, config: RunnableConfig, runtime: Ru
         headers = {"Content-Type": "application/json"}
         
         payload = {
-            "msgtype": "markdown",
-            "markdown": {"content": markdown_content}
+            "msgtype": "text",
+            "text": {"content": markdown_content}
         }
         
         response = requests.post(send_url, json=payload, headers=headers, timeout=15)

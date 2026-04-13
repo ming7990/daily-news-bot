@@ -178,7 +178,7 @@ def news_fetch_node(state: NewsFetchInput, config: RunnableConfig, runtime: Runt
     news_section = "\n\n"
     if news_list:
         for news in news_list:
-            news_section += f"{news['index']}、{news['title']}<br/><br/>"
+            news_section += f"{news['index']}、{news['title']}\n\n"
     else:
         news_section = "今日暂无新闻更新"
 
