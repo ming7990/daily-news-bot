@@ -1,11 +1,11 @@
 ## 项目概述
 - **名称**: 热门新闻企业微信推送工作流
-- **功能**: 每日定时获取top10热门新闻简讯，并通过企业微信机器人发送到指定群组
+- **功能**: 每日定时获取top12热门新闻简讯，并通过企业微信机器人发送到指定群组
 
 ### 节点清单
 | 节点名 | 文件位置 | 类型 | 功能描述 | 分支逻辑 | 配置文件 |
 |-------|---------|------|---------|---------|---------|
-| news_fetch | `nodes/news_fetch_node.py` | task | 使用web搜索获取热门新闻 | - | - |
+| news_fetch | `nodes/news_fetch_node.py` | task | 使用web搜索获取热门新闻并格式化为早报 | - | - |
 | wechat_send | `nodes/wechat_send_node.py` | task | 将新闻发送到企业微信 | - | - |
 
 **类型说明**: task(task节点) / agent(大模型) / condition(条件分支) / looparray(列表循环) / loopcond(条件循环)
@@ -18,11 +18,18 @@
 - 节点`wechat_send`使用企业微信机器人技能
 
 ## 工作流输入参数
-- `search_query` (str): 搜索关键词，默认"今日热门新闻"
+- `search_query` (str): 搜索关键词，默认"今日热点新闻"
 - `time_range` (str): 时间范围，默认"1d"（一天内）
 
 ## 工作流输出参数
 - `send_result` (dict): 企业微信发送结果，包含success、errcode、errmsg、message_count等字段
+
+## 消息格式说明
+早报格式包含以下部分：
+1. **头部信息**：日期、星期、农历、问候语
+2. **节日提醒**：如果是特殊节日，显示节日名称和介绍
+3. **新闻列表**：12条简短新闻标题
+4. **微语**：每日励志语录
 
 ## 定时任务说明
 本工作流需要配置定时任务来实现每日9点前和18点前自动运行。请使用以下任一方式配置：
@@ -30,10 +37,10 @@
 ### 方式1：使用系统定时任务（crontab）
 ```bash
 # 每日9点运行
-0 9 * * * cd /path/to/project && uv run python src/main.py '{"search_query":"今日热门新闻","time_range":"1d"}'
+0 9 * * * cd /path/to/project && uv run python src/main.py '{"search_query":"今日热点新闻","time_range":"1d"}'
 
 # 每日18点运行
-0 18 * * * cd /path/to/project && uv run python src/main.py '{"search_query":"今日热门新闻","time_range":"1d"}'
+0 18 * * * cd /path/to/project && uv run python src/main.py '{"search_query":"今日热点新闻","time_range":"1d"}'
 ```
 
 ### 方式2：使用任务调度器
@@ -46,6 +53,9 @@
 3. 凭证中需包含webhook_url或webhook_key字段
 
 ## 注意事项
-- 如果未配置企业微信凭证，工作流会模拟成功，返回格式化后的新闻内容
-- 新闻数量固定为10条（top10）
+- 新闻数量固定为12条
 - 时间范围默认为1天，可根据需要调整（如"1w"表示一周内）
+- 使用zhdate库计算农历日期
+- 包含节日提醒功能（内置常见节日列表）
+- 每日微语从预设语录库中随机选择
+- 消息格式严格按照早报样式输出
