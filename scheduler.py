@@ -30,13 +30,14 @@ def push_news():
     try:
         # 使用subprocess调用uv run
         result = subprocess.run(
-            ['uv', 'run', 'python', 'src/main.py', '{"search_query":"今日热点","time_range":"1d"}'],
+            ['uv', 'run', 'python', 'src/main.py', '-m', 'flow', '-i', '{"search_query":"今日热点","time_range":"1d"}'],
             capture_output=True,
             text=True,
             cwd='/workspace/projects'
         )
         if result.returncode == 0:
             logger.info(f"早报推送成功")
+            logger.info(f"推送结果: {result.stdout[:500]}")  # 只记录前500字符
         else:
             logger.error(f"早报推送失败: {result.stderr}")
     except Exception as e:
